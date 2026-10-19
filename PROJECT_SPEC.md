@@ -2650,6 +2650,7 @@ written, not done).
 | 42 | Nothing required in CI builds the published image on purpose | **open** | §13.68's pin makes the format gate and the image agree today; it does not make the gate cover the image. `dotnet format` runs on the runner's SDK, the image is a separate build, and the only thing that compiles it in CI is the pair of compose suites — which build it incidentally, as setup for what they actually assert. A formatting or analyzer violation that only the image's SDK sees is therefore caught by a job whose name and purpose are about something else, and would be caught not at all if those suites were ever made to reuse a prebuilt image. **And the SDKs still differ.** §13.68's correction records that pinning the base tag did not align them: the gate's SDK comes from `actions/setup-dotnet` resolving `global.json`, the image's from its base tag, and a patch-level disagreement between the two is enough to break the image while the gate is green. Closing this row means a required job that builds the image; aligning the SDKs is a second, separate thing, and neither is done. **A second instance is already on file, latent.** A scan for the construct that broke — a comment between invocation arguments, not the object-initializer and attribute cases, which the newer band compiled without complaint — finds exactly one more: `tests/Editor.Api.Tests/Persistence/SnapshotSizeMetricTests.cs:101`. It is not in the image's project graph, so nothing has ever compiled it under 10.0.4xx, and `rollForward: latestPatch` now stops anyone reaching that band by accident. Recorded rather than rewritten: changing it would be speculative, since no compiler available here reports it. **Whoever bumps the pin should build `tests/` first and look there.** **Closes when a required CI job builds `src/Editor.Api/Dockerfile` as its stated purpose and fails on any warning**, so that bumping the pin is verified rather than hoped through | §3, §4, §12, §13.68 |
 | 43 | Whether the Windows checkout was ever CRLF is unresolved | **open** | §13.68's third explanation — `core.autocrlf` giving a Windows working tree CRLF where `.editorconfig` requires LF — is the only one that accounts for CI and the reporter disagreeing under the same pinned SDK. It is not confirmed. The diagnostic proposed for it, `git ls-files --eol`, shipped in the same commit as the `.gitattributes` that fixes it, so by the time it ran it printed `w/lf` with `attr/text=auto eol=lf` and could not distinguish "never was CRLF" from "was, and is now corrected". **Closes when someone establishes which it was** — `git config core.autocrlf` on the affected machine, or a checkout with `.gitattributes` removed — or when a Windows build reproduces the IDE0055 failure with LF confirmed, which would refute it. Until then the comment-lifting in `RedisConnectTicketStore`, `RedisExtensions` and `SecretRedaction` is a change whose necessity is unproven, kept because it costs nothing | §3, §13.68, §13.70 |
 | 44 | No test does what a person on a fresh clone does | **open, and it supersedes the setup half of 42 and 43** | Five setup failures in one sequence — `IDE0055` from a CRLF working tree, `dev-cert.sh` producing no certificate, `EISDIR` on a path that did not exist, `EACCES` on a root-owned volume, and a silent `fetch` failure to an untrusted issuer origin — none of them a product bug, every one a precondition nothing states and no suite covers (§13.72). CI checks out on Linux, generates its certificate from a harness rather than the script a human runs, writes its own `.env` instead of copying `.env.example`, and pins the certificate into the browser on the command line. Each is reasonable; together they mean **the suites exercise a path no person takes**. §13.27's walk was meant to be this and is not — it drives the harness's stack, not the README's. **Closes when one CI job starts from a clone and follows the README in its own order with nothing pre-arranged** — `cp .env.example .env`, `dev-cert.sh`, `docker compose up` with the overlay, reach the application — and fails when any step does. Every failure above would have been caught by it on the commit that introduced it | §4, §7, §12, §13.27, §13.68, §13.69, §13.70, §13.71, §13.72 |
+| 45 | The build's result depends on data fetched at build time | **unhomed — no phase owns it** | `924b6c5` was green, nothing was pushed after it, and three weeks later the same commit failed to restore: three NuGet advisories published on 13 October 2026, and `TreatWarningsAsErrors` turns NU1902/NU1903 into errors. NuGet resolves advisories against a live feed on every restore, so the inputs to the build include a file this repository does not contain and nobody here maintains (§13.73). The bump to 10.0.13 and 2.5.303 makes today's restore green; it does not touch this. **A release tag is not re-buildable, and "green" has no date** — a passing run proves the tree was clean against one day's feed, which is less than §13.60's requirement that a run exist looks like it gives you. **Two candidate closures, and what each costs.** (a) **Restore against a mirrored feed snapshot.** Builds become reproducible; the project goes blind to every advisory published after the snapshot until somebody refreshes it by hand — which is §13.36 one level up, a check whose input is kept by hand, and the failure direction flips from loud to silent. A future reader should weigh that before reaching for it: the current arrangement fails noisily on a real problem, and this one passes quietly on one. (b) **Keep the live feed and move the signal off the commit** — accept that a build is not reproducible, and make a scheduled restore, not a push, the thing that reports a dependency going bad. Costs the property in (a) permanently and needs somebody to watch a scheduled job. **This is already what the project does, by accident and with nobody watching.** **What does not work:** a committed `packages.lock.json` with `--locked-mode`. It fixes the resolved *graph*; NuGet consults the advisory feed either way. **Closes when one of the two is chosen and written down** — a snapshot with a named refresh owner, or a scheduled restore that is the reporting mechanism with the non-reproducibility accepted in writing. **Not when a bump makes the current restore pass.** **Observed on the same pass and deliberately not fixed:** `npm audit` reports three high transitive advisories in `client/` — `undici`, `brace-expansion`, `source-map-js` — none of them reachable from a direct dependency (`npm ls undici` is empty, every `effects` list is empty). **`npm audit` is not in any CI job**, so nothing is red and nothing is checked: the .NET half of the tree has an advisory gate that fails the build and the TypeScript half has none. That is a gap stated here, not a task — scoped out deliberately, and it is the asymmetry rather than the three packages that matters. **One more, unrelated and small:** `git remote get-url origin` still names `eznoobee` after the account was renamed to `nooree00`. `git push` works, because GitHub redirects; API queries do not, which is why `scripts/push.sh` exited 2 — **"could not ask GitHub", not "CI failed to start"** — on `5cf2d1a`. Both runs had in fact started with jobs, confirmed by hand. The script behaving that way is §13.67 working as built and is not a bug; the stale remote is one line of `git remote set-url` whenever someone is in there | §13.36, §13.60, §13.67, §13.73, §13.74 |
 
 **Rows 15–21 came from one walk** (§13.27), run at the end of Phase 4 against a
 cold start with nothing seeded. None of them was deferred; each was a step
@@ -6941,7 +6942,7 @@ builds the same way next year as today. It does not. Specifically:
   that existed proves less than it looks like it does.
 - **Red does not mean broken.** An advisory for a code path the project never
   enters fails the build exactly as hard as one in the hot path — which is this
-  round's shape. See the severity note below.
+  round's shape, and §13.74's subject.
 
 **What would close it, and the cost of each.** `--locked-mode` with a committed
 `packages.lock.json` fixes the *graph*, not the advisory feed; NuGet consults
@@ -6951,25 +6952,90 @@ project blind to new advisories until somebody refreshes the snapshot by hand �
 reintroducing §13.36 one level up; or keep the live feed and accept that a
 scheduled run, not a commit, is what tells you a dependency went bad. **Neither
 is written, and the second is what this project is already doing by accident.**
+**Register row 45**, unhomed: no phase owns it, and a bump that makes the
+current restore pass does not close it.
 
-#### The severity is not where the risk is
+One of the three advisories is high-severity and is the only one of the three
+that cannot fire here. That is a finding of its own and §13.74 carries it.
 
-Three advisories, one of them high, and the high one is the one that cannot fire
-here:
+### 13.74 A severity score is a property of the vulnerability, not of your exposure to it
 
-| advisory | package | severity | our use |
+The three advisories §13.73's restore failure surfaced, with what this project
+actually does with each:
+
+| advisory | package | severity | our exposure |
 |---|---|---|---|
-| `GHSA-334f-vvp4-7g6p` (CVE-2026-70159) | `Microsoft.AspNetCore.SignalR.Common` | **high**, 7.5 | **Not reachable.** The flaw is in SignalR's stateful reconnect — `MessageBuffer.ResendAsync` backpressure. Stateful reconnect is opt-in on both sides and this project enables it on neither: no `AllowStatefulReconnect` on `MapHub`, no `withStatefulReconnect()` on the client |
-| `GHSA-86xp-94pg-8r6r` (CVE-2026-92707) | `Microsoft.AspNetCore.SignalR.Protocols.MessagePack` | moderate, 5.3 | **On every message.** §13.13a withdrew JSON, so MessagePack is the only negotiable protocol: every frame in and out goes through the affected parser |
-| `GHSA-qhrr-8q5h-9q3h` (same CVE) | `MessagePack` | moderate, 5.3 | **Mitigated by design, not by luck.** The amplification is `PrimitiveObjectFormatter` sizing an `object[]` from a declared length before the depth check. It is selected when untrusted data is deserialised as `object`, and no hub method here takes one: the parameters are `Guid`, `byte[]`, `bool` and `Dictionary<Guid, long>`. §6's payload crosses as an opaque byte string precisely so MessagePack's object model is never entered (§13.13a) |
+| `GHSA-334f-vvp4-7g6p` (CVE-2026-70159) | `Microsoft.AspNetCore.SignalR.Common` | **high**, 7.5 | **Not reachable at all.** The flaw is in SignalR's stateful reconnect — a client blocking broadcasts indefinitely through `MessageBuffer.ResendAsync` backpressure. Stateful reconnect is opt-in on both sides and this project enables it on neither: no `AllowStatefulReconnect` on `MapHub`, no `withStatefulReconnect()` on the client |
+| `GHSA-86xp-94pg-8r6r` (CVE-2026-92707) | `Microsoft.AspNetCore.SignalR.Protocols.MessagePack` | moderate, 5.3 | **On every frame.** §13.13a withdrew JSON, so MessagePack is the only negotiable protocol and every message in and out goes through the affected parser |
+| `GHSA-qhrr-8q5h-9q3h` (same CVE) | `MessagePack` | moderate, 5.3 | **Reachable in principle, closed by a decision taken for another reason.** See below |
 
-So the loudest number is attached to the only one of the three that is
-unreachable, and the two that are reachable are the quiet ones. **Reading the
-severity instead of the advisory would have got the priority backwards in both
-directions.**
+**The loudest number is on the only one that cannot fire, and the one on every
+frame is a quiet one.** Triaging by severity would have got the priority wrong
+in both directions at once: over-attending to the unreachable high, and
+under-attending to the moderate that sits in the hot path.
 
-That does not change what was done — all three are patched, by the same bump,
-and arguing a high-severity advisory is unreachable in order to keep shipping
-the affected version is the move §12 forbids. It changes what the fix was
-*urgent* about, which is worth knowing before a decision has to be taken under
-time pressure rather than after.
+That is not a complaint about the scores. CVSS describes the vulnerability —
+what an attacker can do to a system that has the affected code on a reachable
+path. **It says nothing about whether this system does.** The two are different
+quantities and only one of them is printed in the warning, so the number that
+arrives is the one that cannot answer the question being asked of it. A
+severity is an input to triage and never its output; the output needs the code.
+
+Both halves of the error cost something real:
+
+- **Over-attending to the unreachable one** spends the scarce thing — attention
+  under time pressure — on the item with no consequence, and makes the fix look
+  finished when the reachable ones are the reason it mattered.
+- **Under-attending to the one on every frame** is the worse direction, and it
+  is the one a severity-ordered list produces by construction: it sorts the hot
+  path *below* the thing that cannot happen.
+
+Nothing in this follows from it about shipping. All three were patched by the
+same bump, nothing was suppressed, and `TreatWarningsAsErrors` was left alone.
+**Reachability is an argument about urgency and never a licence to keep an
+affected version** — using it that way is the move §12 forbids, and this entry
+would be the pretext for it if it were read as one. What it changes is the order
+in which three items get looked at, and what you say about them afterwards.
+
+#### The MessagePack mitigation is by design, not by luck
+
+Worth stating separately, because it is the opposite of this log's usual
+finding. The amplification in `GHSA-qhrr-8q5h-9q3h` is
+`PrimitiveObjectFormatter` sizing an `object[]` from a declared array length
+before the depth check, with nested array headers reusing the same trailing
+bytes as evidence those elements exist: roughly 31.5 KiB of payload allocating
+roughly 114.7 MiB, about 3,800x. It is reached when untrusted data is
+deserialised as `System.Object`.
+
+Nothing here deserialises as `object`. No hub method takes one — the parameters
+are `Guid`, `byte[]`, `bool` and `Dictionary<Guid, long>` — and §6's payload
+crosses as an opaque byte string, so MessagePack's object model is never
+entered.
+
+**That was decided for an entirely different reason.** §13.13a's note on
+`AddMessagePackProtocol` says it: a second encoding with its own canonical-form
+rules is where §13.11's bug came from, so the payload stays in §6's format and
+MessagePack frames bytes it does not inspect. The decision was about having one
+canonical form rather than two. Years later it is also what closes the attack
+surface of an advisory nobody had written yet.
+
+**The 64 KiB receive cap would not have been enough on its own.** `§7`'s
+`MaximumReceiveMessageSize` bounds the payload, and the advisory says directly
+that lowering message or depth limits reduces worst-case allocation without
+fixing anything. At the stated amplification a message at the cap is on the
+order of 230 MiB of reference storage, repeatable per connection. The cap is a
+mitigation of degree; not entering the object model is a mitigation of kind.
+
+Two things follow, and the second is the reason this is written down:
+
+1. **The mitigation is not evidence of good threat modelling here.** Nobody
+   reasoned about `PrimitiveObjectFormatter`. A narrow, well-argued decision
+   about canonical form happened to remove a class of exposure, and calling
+   that foresight after the fact is the same self-congratulation the rest of
+   §13 is a record of avoiding.
+2. **It is also not luck in the sense of being fragile for free.** The property
+   that closes the hole — no untrusted input is deserialised into an open type
+   — is a stated invariant with a reason behind it, not an accident of the
+   current code. That is what makes it safe to rely on, and what would make
+   changing it a decision rather than a refactor. **A hub method taking `object`
+   would reopen this**, and nothing currently fails if someone adds one.

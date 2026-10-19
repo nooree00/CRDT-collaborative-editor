@@ -10,7 +10,7 @@ No CRDT library is used. [`PROJECT_SPEC.md`](PROJECT_SPEC.md) §1 forbids it, an
 that constraint is the point of the project rather than an obstacle to it.
 
 **If you are here to read rather than to run it**, the editor is not the
-interesting part. Start with [`docs/findings.md`](docs/findings.md) — thirteen
+interesting part. Start with [`docs/findings.md`](docs/findings.md) — fourteen
 ways verification turned out to be lying, each with the failure that exposed
 it. Then [what is open](#what-is-open), which is not a short list and is not
 meant to be.
@@ -202,8 +202,8 @@ scalability with its four measured targets, §9 the client contract, §11 the
 phase table.
 
 **[`docs/findings.md`](docs/findings.md) is the place to start.** §13 of the
-spec is a decision log with seventy-four entries, written in the order things
-went wrong; `findings.md` is the thirteen with the widest reach, grouped and
+spec is a decision log with seventy-five entries, written in the order things
+went wrong; `findings.md` is the fourteen with the widest reach, grouped and
 with the concrete failure that produced each. If you read one thing here, read that.
 
 **§13 itself is the full log**, and it is the most useful part of the
@@ -233,6 +233,7 @@ Taken from the register in §13; none of it is tidied up to look finished.
 | **Row 42** | Nothing required in CI builds the published image *on purpose* — the compose suites build it incidentally, as setup for asserting something else |
 | **Row 43** | Whether the Windows checkout was ever CRLF is unresolved. The diagnostic shipped in the same commit as the fix and can no longer distinguish the two worlds |
 | **Row 44** | No test does what a person on a fresh clone does. Five setup failures, none a product bug, all invisible to CI. Supersedes the setup half of 42 and 43 |
+| **Row 45** | The build's result depends on data fetched at build time. A green commit went red three weeks later with nothing pushed: NuGet resolves security advisories against a live feed on every restore. A tagged commit is not re-buildable and "green" has no date. Two candidate closures, both with costs, and nobody owns it |
 | **Row 38** | An interior placeholder is never collected and the fraction grows without bound. Measured, with a reversal condition; deliberately not fixed |
 | **§8 target 1** | **Missed: 28.0 ms against 25 ms**, across five runs agreeing within a tolerance fixed beforehand. A recorded miss, not a retune |
 | **§8 target 2** | Missed. The writer's own browser cannot keep up applying everyone else's operations — a different cause from the one recorded in Phase 7b |

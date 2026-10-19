@@ -1,8 +1,8 @@
 # What this project found
 
-`PROJECT_SPEC.md` §13 is a decision log with seventy-four entries, written in
+`PROJECT_SPEC.md` §13 is a decision log with seventy-five entries, written in
 the order things went wrong. That is the right shape for a record and the wrong
-shape for a reader. This is the thirteen with the widest reach, grouped by what
+shape for a reader. This is the fourteen with the widest reach, grouped by what
 they are about rather than when they happened, each with the concrete failure
 that produced it.
 
@@ -223,7 +223,7 @@ while that path had never been walked once.
 
 ## VI. Reproducibility
 
-### 13. A build whose answer is fetched at build time is not reproducible [§13.73]
+### 13. A build whose answer is fetched at build time is not reproducible [§13.73, register row 45]
 
 A commit that was green went red three weeks later with nothing pushed after
 it. Three NuGet security advisories had been published in the interval, and
@@ -244,13 +244,83 @@ tree was clean against one day's feed, which is less than it looks like.
 §13.60 established that a run must exist; this establishes that a run that
 existed proves less than it seems to.
 
-And the severity ordering misled. Of the three advisories, the **high** one was
-in SignalR's stateful reconnect, which this project enables on neither side —
-unreachable. The two **moderate** ones were in the MessagePack hub protocol,
-which §13.13a made the only negotiable protocol, so they sit on every frame.
-**Reading the severity instead of the advisory would have got the priority
-backwards in both directions.** All three were patched regardless; arguing
-reachability in order to keep shipping an affected version is what §12 forbids.
+Register row 45 carries it, with the two candidate closures and what each
+costs — the useful half, because the obvious fix makes it worse in a way that
+is not obvious. A mirrored feed snapshot does make builds reproducible, and it
+reintroduces §13.36 one level up: a check whose input is kept by hand, failing
+silently instead of loudly. A committed `packages.lock.json` with
+`--locked-mode` does not help at all; it fixes the resolved graph, and NuGet
+consults the advisory feed either way.
+
+The severity ordering of the three advisories misled as well, in both
+directions. That is finding 14.
+
+---
+
+## VII. Triage
+
+### 14. A severity score is a property of the vulnerability, not of your exposure to it [§13.74]
+
+The three advisories that broke the build (finding 13) ranked like this:
+
+| advisory | severity | our exposure |
+|---|---|---|
+| SignalR stateful reconnect, `GHSA-334f-vvp4-7g6p` | **high**, 7.5 | **not reachable** — stateful reconnect is opt-in on both sides and this project enables it on neither |
+| SignalR MessagePack protocol, `GHSA-86xp-94pg-8r6r` | moderate, 5.3 | **on every frame** — §13.13a withdrew JSON, so MessagePack is the only negotiable protocol |
+| MessagePack `PrimitiveObjectFormatter`, `GHSA-qhrr-8q5h-9q3h` | moderate, 5.3 | reachable in principle, closed by a decision taken for another reason |
+
+**The loudest number is on the only one that cannot fire, and the one on every
+frame is a quiet one.** Triaging by severity gets the priority wrong in both
+directions at once: you over-attend to the unreachable high, and under-attend
+to the moderate in the hot path — and a severity-ordered list produces the
+second by construction, since it sorts the hot path *below* the thing that
+cannot happen.
+
+This is not a complaint about CVSS. The score describes what an attacker can do
+to a system that has the affected code on a reachable path. **It says nothing
+about whether this system does.** Those are two different quantities and only
+one of them is printed in the warning, so the number that arrives is the one
+that cannot answer the question being asked of it. Severity is an input to
+triage, never its output; the output needs the code.
+
+Nothing about shipping follows from it. All three were patched by the same
+bump, nothing was suppressed. **Reachability is an argument about urgency and
+never a licence to keep an affected version** — using it that way is what §12
+forbids, and this finding is the obvious pretext for it if read carelessly.
+
+### The MessagePack mitigation was by design, not by luck — and that is the unusual part
+
+Worth separating out, because it is the opposite of this document's usual
+finding. The amplification is `PrimitiveObjectFormatter` sizing an `object[]`
+from a declared array length before the depth check, with nested headers
+reusing the same trailing bytes as evidence those elements exist: ~31.5 KiB
+allocating ~114.7 MiB, about 3,800x. It needs untrusted data deserialised as
+`object`. Nothing here does that — no hub method takes one, and §6's payload
+crosses as an opaque byte string, so MessagePack's object model is never
+entered.
+
+**That was decided for an entirely different reason.** §13.13a kept the payload
+in §6's format because a second encoding with its own canonical-form rules is
+where §13.11's bug came from. The decision was about having one canonical form.
+Years later it is also what removes this attack surface.
+
+Two things follow, and the second is why this is written down at all:
+
+- **It is not evidence of good threat modelling.** Nobody reasoned about
+  `PrimitiveObjectFormatter`. Calling it foresight afterwards is exactly the
+  self-congratulation the rest of this document records avoiding.
+- **It is not luck either, in the sense that matters.** The property that closes
+  the hole — no untrusted input deserialised into an open type — is a stated
+  invariant with a reason behind it, not an accident of the current code. That
+  is what makes it safe to rely on, and what makes changing it a decision
+  rather than a refactor. **A hub method taking `object` would reopen it**, and
+  nothing currently fails if someone adds one.
+
+The 64 KiB receive cap would not have been enough on its own: the advisory says
+plainly that lowering size or depth limits reduces worst-case allocation
+without fixing anything, and at the stated amplification a message at the cap
+is on the order of 230 MiB, repeatable per connection. The cap is a mitigation
+of degree. Not entering the object model is a mitigation of kind.
 
 ---
 
