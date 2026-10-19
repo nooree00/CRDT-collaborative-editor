@@ -6903,3 +6903,73 @@ harness's stack, not the README's.
 not reach, because `fetch` gives it nothing else and the browser does not
 prompt. That does not close the row; it means the next person loses minutes
 rather than an evening.
+
+### 13.73 A build whose answer is fetched at build time is not reproducible
+
+`924b6c5` was green. Nothing was pushed after it. Three weeks later the same
+commit failed to restore:
+
+```
+NU1903  Package 'Microsoft.AspNetCore.SignalR.Common' 10.0.11 has a known high severity vulnerability
+NU1902  Package 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' 10.0.11 has a known moderate severity vulnerability
+NU1902  Package 'MessagePack' 2.5.302 has a known moderate severity vulnerability
+```
+
+`TreatWarningsAsErrors` turns those into errors, so the build stopped. The
+advisories were published on 13 October 2026; the commit predates them. Nothing
+about the commit changed — **NuGet resolves advisories against
+`api.nuget.org/v3/vulnerabilities`, fetched on every restore**, so the inputs to
+the build include a file this repository does not contain, cannot pin, and
+nobody here maintains.
+
+This is the same class as a check whose input is kept by hand (§13.36): the
+answer depends on something outside the commit, so re-running the build is not
+re-running the same build. The difference is the direction of the failure.
+A hand-kept list goes stale and the check quietly passes; this one goes stale
+and the check loudly fails. **The loud direction is the better one, and the
+gate working as designed is what this entry is about** — a dependency that
+became dangerous after it was chosen is exactly what the warning exists to say,
+and the only alternative to hearing it is not hearing it.
+
+What it costs is a real property the project otherwise has: a tagged commit
+builds the same way next year as today. It does not. Specifically:
+
+- **A release tag is not re-buildable.** Any commit can go red with no change to
+  it, at any time, including after the work is finished.
+- **"Green" has no date.** A CI run proves the tree was clean against one day's
+  feed. §13.60 established that a run must exist; this establishes that a run
+  that existed proves less than it looks like it does.
+- **Red does not mean broken.** An advisory for a code path the project never
+  enters fails the build exactly as hard as one in the hot path — which is this
+  round's shape. See the severity note below.
+
+**What would close it, and the cost of each.** `--locked-mode` with a committed
+`packages.lock.json` fixes the *graph*, not the advisory feed; NuGet consults
+the feed either way, so it does not help. The two things that would: restore
+against a mirrored feed snapshot, which makes builds reproducible and makes the
+project blind to new advisories until somebody refreshes the snapshot by hand —
+reintroducing §13.36 one level up; or keep the live feed and accept that a
+scheduled run, not a commit, is what tells you a dependency went bad. **Neither
+is written, and the second is what this project is already doing by accident.**
+
+#### The severity is not where the risk is
+
+Three advisories, one of them high, and the high one is the one that cannot fire
+here:
+
+| advisory | package | severity | our use |
+|---|---|---|---|
+| `GHSA-334f-vvp4-7g6p` (CVE-2026-70159) | `Microsoft.AspNetCore.SignalR.Common` | **high**, 7.5 | **Not reachable.** The flaw is in SignalR's stateful reconnect — `MessageBuffer.ResendAsync` backpressure. Stateful reconnect is opt-in on both sides and this project enables it on neither: no `AllowStatefulReconnect` on `MapHub`, no `withStatefulReconnect()` on the client |
+| `GHSA-86xp-94pg-8r6r` (CVE-2026-92707) | `Microsoft.AspNetCore.SignalR.Protocols.MessagePack` | moderate, 5.3 | **On every message.** §13.13a withdrew JSON, so MessagePack is the only negotiable protocol: every frame in and out goes through the affected parser |
+| `GHSA-qhrr-8q5h-9q3h` (same CVE) | `MessagePack` | moderate, 5.3 | **Mitigated by design, not by luck.** The amplification is `PrimitiveObjectFormatter` sizing an `object[]` from a declared length before the depth check. It is selected when untrusted data is deserialised as `object`, and no hub method here takes one: the parameters are `Guid`, `byte[]`, `bool` and `Dictionary<Guid, long>`. §6's payload crosses as an opaque byte string precisely so MessagePack's object model is never entered (§13.13a) |
+
+So the loudest number is attached to the only one of the three that is
+unreachable, and the two that are reachable are the quiet ones. **Reading the
+severity instead of the advisory would have got the priority backwards in both
+directions.**
+
+That does not change what was done — all three are patched, by the same bump,
+and arguing a high-severity advisory is unreachable in order to keep shipping
+the affected version is the move §12 forbids. It changes what the fix was
+*urgent* about, which is worth knowing before a decision has to be taken under
+time pressure rather than after.

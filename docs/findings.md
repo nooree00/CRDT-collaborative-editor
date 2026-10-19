@@ -1,8 +1,8 @@
 # What this project found
 
-`PROJECT_SPEC.md` §13 is a decision log with seventy-three entries, written in
+`PROJECT_SPEC.md` §13 is a decision log with seventy-four entries, written in
 the order things went wrong. That is the right shape for a record and the wrong
-shape for a reader. This is the dozen with the widest reach, grouped by what
+shape for a reader. This is the thirteen with the widest reach, grouped by what
 they are about rather than when they happened, each with the concrete failure
 that produced it.
 
@@ -218,6 +218,39 @@ the suites exercise a path no person takes.**
 §13.27's walk was built for exactly this class and does not do it: it drives the
 harness's stack, not the README's. The close-out declared the project finished
 while that path had never been walked once.
+
+---
+
+## VI. Reproducibility
+
+### 13. A build whose answer is fetched at build time is not reproducible [§13.73]
+
+A commit that was green went red three weeks later with nothing pushed after
+it. Three NuGet security advisories had been published in the interval, and
+`TreatWarningsAsErrors` turns `NU1902`/`NU1903` into errors. **NuGet resolves
+advisories against a live feed on every restore**, so the inputs to the build
+include a file this repository does not contain and nobody here maintains.
+
+Same class as a check whose input is kept by hand (finding 2's neighbourhood,
+§13.36) — the answer depends on something outside the commit — except the
+direction of failure is inverted. A hand-kept list goes stale and the check
+quietly passes. This one goes stale and the check loudly fails. **Loud is the
+right direction**, and the gate firing is the gate working: a dependency that
+became dangerous after it was chosen is precisely what the warning is for.
+
+What it costs is a property the project otherwise has. A tagged commit does not
+build the same way next year. "Green" has no date: a passing run proves the
+tree was clean against one day's feed, which is less than it looks like.
+§13.60 established that a run must exist; this establishes that a run that
+existed proves less than it seems to.
+
+And the severity ordering misled. Of the three advisories, the **high** one was
+in SignalR's stateful reconnect, which this project enables on neither side —
+unreachable. The two **moderate** ones were in the MessagePack hub protocol,
+which §13.13a made the only negotiable protocol, so they sit on every frame.
+**Reading the severity instead of the advisory would have got the priority
+backwards in both directions.** All three were patched regardless; arguing
+reachability in order to keep shipping an affected version is what §12 forbids.
 
 ---
 

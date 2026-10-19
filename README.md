@@ -10,7 +10,7 @@ No CRDT library is used. [`PROJECT_SPEC.md`](PROJECT_SPEC.md) §1 forbids it, an
 that constraint is the point of the project rather than an obstacle to it.
 
 **If you are here to read rather than to run it**, the editor is not the
-interesting part. Start with [`docs/findings.md`](docs/findings.md) — a dozen
+interesting part. Start with [`docs/findings.md`](docs/findings.md) — thirteen
 ways verification turned out to be lying, each with the failure that exposed
 it. Then [what is open](#what-is-open), which is not a short list and is not
 meant to be.
@@ -202,9 +202,9 @@ scalability with its four measured targets, §9 the client contract, §11 the
 phase table.
 
 **[`docs/findings.md`](docs/findings.md) is the place to start.** §13 of the
-spec is a decision log with seventy-three entries, written in the order things
-went wrong; `findings.md` is the dozen with the widest reach, grouped and with the
-concrete failure that produced each. If you read one thing here, read that.
+spec is a decision log with seventy-four entries, written in the order things
+went wrong; `findings.md` is the thirteen with the widest reach, grouped and
+with the concrete failure that produced each. If you read one thing here, read that.
 
 **§13 itself is the full log**, and it is the most useful part of the
 repository: each entry is something that was believed, turned out to be wrong,
