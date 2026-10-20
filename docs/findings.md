@@ -1,6 +1,6 @@
 # What this project found
 
-`PROJECT_SPEC.md` §13 is a decision log with seventy-five entries, written in
+`PROJECT_SPEC.md` §13 is a decision log with seventy-six entries, written in
 the order things went wrong. That is the right shape for a record and the wrong
 shape for a reader. This is the fourteen with the widest reach, grouped by what
 they are about rather than when they happened, each with the concrete failure

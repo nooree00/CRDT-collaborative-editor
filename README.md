@@ -202,7 +202,7 @@ scalability with its four measured targets, §9 the client contract, §11 the
 phase table.
 
 **[`docs/findings.md`](docs/findings.md) is the place to start.** §13 of the
-spec is a decision log with seventy-five entries, written in the order things
+spec is a decision log with seventy-six entries, written in the order things
 went wrong; `findings.md` is the fourteen with the widest reach, grouped and
 with the concrete failure that produced each. If you read one thing here, read that.
 
@@ -234,6 +234,7 @@ Taken from the register in §13; none of it is tidied up to look finished.
 | **Row 43** | Whether the Windows checkout was ever CRLF is unresolved. The diagnostic shipped in the same commit as the fix and can no longer distinguish the two worlds |
 | **Row 44** | No test does what a person on a fresh clone does. Five setup failures, none a product bug, all invisible to CI. Supersedes the setup half of 42 and 43 |
 | **Row 45** | The build's result depends on data fetched at build time. A green commit went red three weeks later with nothing pushed: NuGet resolves security advisories against a live feed on every restore. A tagged commit is not re-buildable and "green" has no date. Two candidate closures, both with costs, and nobody owns it |
+| **Row 46** | The walk cannot explain its own failures — every wait is a bare timeout, while the suite next door has a helper that reports the URL, the page and the stack logs. And step 6's sign-in condition is satisfiable on the issuer's own page |
 | **Row 38** | An interior placeholder is never collected and the fraction grows without bound. Measured, with a reversal condition; deliberately not fixed |
 | **§8 target 1** | **Missed: 28.0 ms against 25 ms**, across five runs agreeing within a tolerance fixed beforehand. A recorded miss, not a retune |
 | **§8 target 2** | Missed. The writer's own browser cannot keep up applying everyone else's operations — a different cause from the one recorded in Phase 7b |

@@ -1,7 +1,31 @@
+import { type Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { startWalk, type Walk } from './harness';
 import { pick } from '../e2e/browser';
+
+/**
+ * Signs in by clicking an account at the issuer, and requires the chooser.
+ *
+ * @remarks
+ * `pick` is deliberately a "use it if it is there" step, because a browser
+ * holding a session skips the chooser — and its own documentation says a caller
+ * that *requires* the chooser has to assert that separately. Every sign-in in
+ * this file opens a fresh context, so every one of them requires it, and all
+ * seven threw the answer away.
+ *
+ * What that cost is on the record. Run 166's step 6 failed as a 60-second
+ * timeout on a condition about the page after the callback — three candidate
+ * causes wide, none of them distinguishable — when `pick` returning false
+ * would have said the chooser never appeared. §13.75, register row 46.
+ */
+async function signInAs(page: Page, subject: string): Promise<void> {
+  expect(
+    await pick(page, subject),
+    `the issuer offered no account for '${subject}' within 15 s, so sign-in `
+    + `never started. The browser is at ${page.url()}.`,
+  ).toBe(true);
+}
 
 /**
  * §13.27's walk, as a test. Phase 5b's done-when.
@@ -150,7 +174,7 @@ describe('the walk: cold start to the first step that cannot be taken', () => {
 
     const document = '00000000-0000-0000-0000-000000000001';
     await page.goto(`${walk.baseUrl}/d/${document}`);
-    await pick(page, 'walker');
+    await signInAs(page, 'walker');
 
     // The redirect to the issuer, the code, the exchange, and the return — all
     // of it through the proxy, against a stack nothing seeded.
@@ -175,7 +199,7 @@ describe('the walk: cold start to the first step that cannot be taken', () => {
     const { page } = await walk.browsing.open();
 
     await page.goto(walk.baseUrl);
-    await pick(page, 'walker');
+    await signInAs(page, 'walker');
 
     await page.waitForSelector('[data-testid="create"]', { timeout: 60_000 });
     await page.fill('[data-testid="new-title"]', 'A document made by a person');
@@ -211,7 +235,7 @@ describe('the walk: cold start to the first step that cannot be taken', () => {
 
     const owner = (await walk.browsing.open()).page;
     await owner.goto(walk.baseUrl);
-    await pick(owner, 'walker');
+    await signInAs(owner, 'walker');
     await owner.waitForSelector('[data-testid="create"]', { timeout: 60_000 });
     await owner.fill('[data-testid="new-title"]', 'Shared by two people');
     await owner.click('[data-testid="create"]');
@@ -223,7 +247,7 @@ describe('the walk: cold start to the first step that cannot be taken', () => {
     // grant works: there is no directory, so the invitee supplies it.
     const guest = (await walk.browsing.open()).page;
     await guest.goto(walk.baseUrl);
-    await pick(guest, 'second-walker');
+    await signInAs(guest, 'second-walker');
     await guest.waitForSelector('[data-testid="my-user-id"]', { timeout: 60_000 });
     const guestId = (await guest.textContent('[data-testid="my-user-id"]'))?.trim() ?? '';
 
@@ -285,7 +309,7 @@ describe('the walk: cold start to the first step that cannot be taken', () => {
 
     const owner = (await walk.browsing.open()).page;
     await owner.goto(walk.baseUrl);
-    await pick(owner, 'walker');
+    await signInAs(owner, 'walker');
     await owner.waitForSelector('[data-testid="create"]', { timeout: 60_000 });
     await owner.fill('[data-testid="new-title"]', 'Shared then taken back');
     await owner.click('[data-testid="create"]');
@@ -295,7 +319,7 @@ describe('the walk: cold start to the first step that cannot be taken', () => {
 
     const guest = (await walk.browsing.open()).page;
     await guest.goto(walk.baseUrl);
-    await pick(guest, 'third-walker');
+    await signInAs(guest, 'third-walker');
     await guest.waitForSelector('[data-testid="my-user-id"]', { timeout: 60_000 });
     const guestId = (await guest.textContent('[data-testid="my-user-id"]'))?.trim() ?? '';
 
@@ -349,7 +373,7 @@ describe('the walk: cold start to the first step that cannot be taken', () => {
     const { page } = await walk.browsing.open();
 
     await page.goto(walk.baseUrl);
-    await pick(page, 'walker');
+    await signInAs(page, 'walker');
 
     // Its own document, made here, so the step neither depends on nor destroys
     // what the earlier steps built.
