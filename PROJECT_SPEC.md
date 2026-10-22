@@ -166,9 +166,11 @@ API starts**, from the same image with a different entrypoint.
 
 Implement **FugueMax** for a sequence of Unicode code points, as defined in
 Weidner & Kleppmann, "The Art of the Fugue: Minimizing Interleaving in
-Collaborative Text Editing", *IEEE TPDS* 36(11), 2025 — Algorithm 1 plus
-Definition 6. Both papers are committed under `docs/references/`; the TPDS
-paper is normative, and the arXiv v1 extended version supplies the appendices.
+Collaborative Text Editing", *IEEE TPDS* 36(11), 2025, DOI
+10.1109/TPDS.2025.3611880 — Algorithm 1 plus Definition 6. The TPDS paper is
+normative, and the arXiv v1 extended version supplies the appendices.
+`docs/references/REFERENCES.md` gives both by DOI or arXiv link, says which
+text the TPDS numbers below were read from, and commits only the arXiv v1 PDF.
 
 Section references below are to the TPDS paper unless marked arXiv.
 
@@ -3261,10 +3263,11 @@ is LTS through November 2028. C# 13 becomes C# 14.
 
 §5 was originally reconstructed from secondary sources and the authors'
 reference implementation, because no copy of the paper was reachable from the
-build environment. Both papers are now committed under `docs/references/`, and
-§5 has been **re-derived from Algorithm 1 and Definition 6 directly** rather
-than spot-checked. Every reconstructed rule resolves below. No rule is left
-unverified.
+build environment. Both papers are now committed under `docs/references/` (the
+TPDS copy, arXiv v3, was later removed as not licensed for redistribution:
+`docs/references/REFERENCES.md`, register row 47), and §5 has been **re-derived
+from Algorithm 1 and Definition 6 directly** rather than spot-checked. Every
+reconstructed rule resolves below. No rule is left unverified.
 
 | # | Rule | Resolution | Reference |
 |---|---|---|---|
