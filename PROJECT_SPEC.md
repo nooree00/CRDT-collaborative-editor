@@ -166,13 +166,24 @@ API starts**, from the same image with a different entrypoint.
 
 Implement **FugueMax** for a sequence of Unicode code points, as defined in
 Weidner & Kleppmann, "The Art of the Fugue: Minimizing Interleaving in
-Collaborative Text Editing", *IEEE TPDS* 36(11), 2025, DOI
-10.1109/TPDS.2025.3611880 — Algorithm 1 plus Definition 6. The TPDS paper is
-normative, and the arXiv v1 extended version supplies the appendices.
-`docs/references/REFERENCES.md` gives both by DOI or arXiv link, says which
-text the TPDS numbers below were read from, and commits only the arXiv v1 PDF.
+Collaborative Text Editing", **arXiv:2305.00583v3** (21 October 2025) —
+Algorithm 1 plus Definition 6. That is the text this section was derived from
+(§13.4), and it is normative here. It is the authors' version of the article
+published as *IEEE TPDS* 36(11):2425–2437, 2025, DOI
+10.1109/TPDS.2025.3611880. **The published version has not been compared with
+it**, so nothing here is a citation of TPDS (§13.76). The arXiv v1 extended
+version (Weidner, Gentle & Kleppmann, 2023) supplies the appendices.
+`docs/references/REFERENCES.md` gives each by link, and commits only the v1 PDF.
 
-Section references below are to the TPDS paper unless marked arXiv.
+**How citations here are written.** An unmarked reference (Algorithm 1,
+Definition 4, Lemma 5) is to arXiv v3. A reference to v1 is marked **arXiv
+v1**. The two number differently, and the same label can name different things:
+v1's Theorem 5 is the impossibility result, while v3 has no Theorem 5 and its own
+cross-references use that label for Lemma 5; v1's Fig. 7 is the impossibility
+counterexample, v3's Fig. 7 extends its Fig. 6. Elsewhere in the repository
+(code comments, test messages, the conformance traces) "TPDS" means arXiv v3,
+the text that was read, and "arXiv" means v1. §13.76 names the two places where
+that rule does not hold.
 
 FugueMax replaces RGA, which was specified here originally. The reason is
 recorded in §13.1: RGA cannot satisfy invariant 8.
@@ -267,8 +278,8 @@ lines 23–24):
 - `leftOrigin` — the node of the visible value at index `i-1`, or the root if
   `i = 0`.
 - `rightOrigin` — **the next node after `leftOrigin` in the traversal that
-  includes tombstones**, or `null` if none exists (arXiv §5.1 calls this
-  `end`). This is computed once, before the branch below, not per branch.
+  includes tombstones**, or `null` if none exists (arXiv v1 §5.1 calls
+  this `end`). This is computed once, before the branch below, not per branch.
 
 Then place the node (Algorithm 1, lines 25–28):
 
@@ -725,9 +736,9 @@ property tests before writing the implementation.
 
 **Scope — read this before writing the test.** Invariant 8 was originally
 written as "runs never interleave, in either direction". That is not
-achievable, and not just by FugueMax: arXiv Theorem 5 proves **no algorithm
+achievable, and not just by FugueMax: arXiv v1 Theorem 5 proves **no algorithm
 satisfying the strong list specification can satisfy both forward and backward
-non-interleaving.** Its counterexample (arXiv Appendix B, Fig. 7) starts from
+non-interleaving.** Its counterexample (arXiv v1 Appendix B, Fig. 7) starts from
 `a`; two replicas concurrently insert `b` and `c` after it; two replicas in
 state `ac` insert `e` and `g`; then `d` between `b` and `e` and `f` between `b`
 and `g`. Forward non-interleaving forces `a < b < (d,f) < (e,g) < c`, whose four
@@ -785,10 +796,10 @@ but not 8(b) at all. See §13.1.
      **Forward runs: asserted unconditionally**, at any number of replicas, on
      the strength of Lemma 3. **Backward runs: observed, never asserted.** The
      papers give no backward analogue of Lemma 3 at any replica count, and
-     Theorem 5 is the reason there cannot be one.
+     arXiv v1 Theorem 5 is the reason there cannot be one.
 
   The generator must still produce backward runs, and must produce the layered
-  shape of arXiv Fig. 7 — two rounds of concurrency separated by a partial
+  shape of arXiv v1 Fig. 7 — two rounds of concurrency separated by a partial
   delivery, with the interleaving pairs typed right to left across both rounds.
   That shape is the only one in which the Lemma 5 exception arises; a single
   round of concurrent runs cannot produce it however many replicas take part.
@@ -802,7 +813,7 @@ but not 8(b) at all. See §13.1.
   algorithm. A rate at or near 100% means the generator is not reaching the
   Lemma 5 shape and the corpus is weaker than it looks — that is how the false
   boundary above survived its first measurement. The rate observed once the
-  Fig. 7 shape was generated is roughly 89%.
+  arXiv v1 Fig. 7 shape was generated is roughly 89%.
 - **Coverage:** ≥85% **mutation score** on `Crdt.Core`, measured with
   Stryker.NET. Line coverage is not a goal and is not tracked — it is trivially
   satisfiable by tests that assert nothing interesting about a CRDT. Enforced in
@@ -2314,7 +2325,7 @@ structure itself, which is the thing under test.
     "oneOf": ["abx", "xab"],
     "forbidden": ["axb"],
     "versionVector": { "00000000-0000-0000-0000-000000000001": "2" },
-    "rationale": "FugueMax must not backward-interleave two replicas; axb is the RGA anomaly (arXiv A.1.8)."
+    "rationale": "FugueMax must not backward-interleave two replicas; axb is the RGA anomaly (arXiv v1 A.1.8)."
   }
 }
 ```
@@ -2406,13 +2417,13 @@ across two languages:
 
 1. **Transcribed fixed traces first**, by hand, from the papers, before any
    generated trace exists:
-   - arXiv A.1 forward canonical — `a` then `b` concurrent with `x`; `axb` is
+   - arXiv v1 A.1 forward canonical — `a` then `b` concurrent with `x`; `axb` is
      the forward anomaly.
-   - arXiv A.1 backward canonical — `b` then prepend `a`, concurrent with `x`;
-     `axb` is the backward anomaly, and is what RGA produces (A.1.8).
-   - arXiv A.1.9 multi-replica backward.
-   - TPDS Fig. 6 — three replicas, forced result `AXBC`.
-   - arXiv Thm 5 / Appendix B counterexample — four permitted orders, all of
+   - arXiv v1 A.1 backward canonical — `b` then prepend `a`, concurrent with `x`;
+     `axb` is the backward anomaly, and is what RGA produces (arXiv v1 A.1.8).
+   - arXiv v1 A.1.9 multi-replica backward.
+   - arXiv v3 Fig. 6 — three replicas, forced result `AXBC`.
+   - arXiv v1 Thm 5 / Appendix B counterexample — four permitted orders, all of
      which interleave; the case where interleaving is unavoidable.
    - The Kleppmann interleaving test: two replicas concurrently insert
      `----------` and `##########` between `<` and `>`; permitted results are
@@ -2449,7 +2460,7 @@ something about it.
 | **Backward runs** — a replica prepending, so its run grows right-to-left | §13.6: the replica-count boundary for backward runs was wrong once already, and only a backward case can find that |
 | **Deletion of concurrently-inserted elements** | Tombstones whose neighbours are themselves concurrent, which is where `RightOrigin` handling gets tested rather than assumed |
 | **Causally delayed delivery** — an operation delivered after later ones from the same replica | §5's readiness rule. Without it every trace is effectively in causal order and the pending set is never entered |
-| **Replica count** ≥3 | Two replicas cannot produce the three-way tie-breaks TPDS Fig. 6 is about |
+| **Replica count** ≥3 | Two replicas cannot produce the three-way tie-breaks arXiv v3 Fig. 6 is about |
 | **Document scale** | §13.10: the generator explored shape exhaustively and scale not at all. Traces are small by nature, so this dimension is *deliberately* covered by the property tests at 150k rather than by the corpus, and is listed here so that exclusion is a decision rather than an omission |
 
 **Reported, not merely computed.** The corpus manifest states the counts, and
@@ -3265,10 +3276,11 @@ is LTS through November 2028. C# 13 becomes C# 14.
 §5 was originally reconstructed from secondary sources and the authors'
 reference implementation, because no copy of the paper was reachable from the
 build environment. Both papers are now committed under `docs/references/` (the
-TPDS copy, arXiv v3, was later removed as not licensed for redistribution:
-`docs/references/REFERENCES.md`, register row 47), and §5 has been **re-derived
-from Algorithm 1 and Definition 6 directly** rather than spot-checked. Every
-reconstructed rule resolves below. No rule is left unverified.
+copy filed as TPDS was in fact arXiv v3, so that is what §5 was re-derived from,
+§13.76; it was later removed as not licensed for redistribution, register row
+47), and §5 has been **re-derived from Algorithm 1 and Definition 6 directly**
+rather than spot-checked. Every reconstructed rule resolves below. No rule is
+left unverified.
 
 | # | Rule | Resolution | Reference |
 |---|---|---|---|
@@ -3277,7 +3289,7 @@ reconstructed rule resolves below. No rule is left unverified.
 | 3 | No right children → right child of `leftOrigin`; else left child of `rightOrigin` | CONFIRMED | Alg 1, lines 25–28 |
 | 4 | `rightOrigin` = next node after `leftOrigin` in the traversal *including tombstones* | **CORRECTED** — computed once, unconditionally, before the branch. §5 had described it per branch, using "next non-descendant" in the right-child case. Equivalent there, but a restatement rather than the rule. | Alg 1, line 24 |
 | 5 | `RightOrigin` carried on right children only | CONFIRMED | Def 6, change 1 |
-| 6 | `RightOrigin` null means end of document | CONFIRMED — the paper's `end` symbol | arXiv §5.1 |
+| 6 | `RightOrigin` null means end of document | CONFIRMED — the paper's `end` symbol | arXiv v1 §5.1 |
 | 7 | Right siblings ordered by reverse *list order* of `RightOrigin` | CONFIRMED — `≻` is explicitly the existing list order, not an id comparison | Def 6, change 2 |
 | 8 | Right-sibling tie-break | **CORRECTED** — the tie-break is the full `ElementId` `(ReplicaId, Seq)`, not `ReplicaId` alone | Def 6; Alg 1, line 33 |
 | 9 | Left siblings ordered by `ReplicaId` ascending | **CORRECTED** — ordered by full `ElementId` ascending | Alg 1, line 36 |
@@ -3288,7 +3300,7 @@ reconstructed rule resolves below. No rule is left unverified.
 | 14 | Deletes buffer until their target exists | CONFIRMED in substance — the paper assumes causal broadcast; our pending set is how that assumption is discharged over an untrusted network | Alg 1, lines 39–44 |
 | 15 | A replica cannot create two same-side siblings of one parent | CONFIRMED | §4 |
 | 16 | `ReplicaId` byte ordering is normative | CONFIRMED as compatible, but it is **our** requirement, not the paper's: the paper says id construction and order "is not important". §9 needs it for cross-implementation determinism. | §4 |
-| 17 | Invariant 8 holds in both directions | **CORRECTED** — unachievable by any algorithm. Rewritten as maximal non-interleaving with an explicit scope note. | arXiv Thm 5; Def 4; Thm 9 |
+| 17 | Invariant 8 holds in both directions | **CORRECTED** — unachievable by any algorithm. Rewritten as maximal non-interleaving with an explicit scope note. | arXiv v1 Thm 5; Def 4; Thm 9 |
 
 ### 13.6 The replica-count boundary for backward runs was wrong
 
@@ -3302,7 +3314,7 @@ merely too generous. It was not: the generator only produced a single round of
 concurrency, and the Lemma 5 exception cannot arise in that shape at all. The
 measurement was of the generator, not the algorithm.
 
-Adding the arXiv Fig. 7 shape — two rounds separated by a partial delivery, with
+Adding the arXiv v1 Fig. 7 shape — two rounds separated by a partial delivery, with
 the interleaving pairs typed right to left across both rounds — immediately
 produced a violated backward run at **concurrency two**, inside a four-replica
 execution. Definition 4 held throughout, so the algorithm was right and the
@@ -7124,3 +7136,75 @@ The timeout is not raised and the condition is not rewritten. Both are
 register row 46's subject, and raising a timeout to pass a test that cannot
 say what failed would be §13.64 exactly: an environmental tolerance standing
 in for a diagnosis.
+
+### 13.76 A citation records where a claim is said to come from, and nothing checks where it came from
+
+§5 named its normative source as *IEEE TPDS* 36(11), 2025, and filed every
+unmarked reference in it — Algorithm 1, Definition 4, Lemma 5, Fig. 6 — under
+that name. The copy this project actually read was committed as
+`docs/references/fugue-tpds-2025.pdf`, and §13.4 re-derived §5 from it. It was
+**arXiv:2305.00583v3**, the authors' version posted on 21 October 2025. Its
+first page says so in the margin stamp, and its metadata names arXiv's licence.
+**Nobody here has seen the published article.** A reader checking §5 against
+TPDS Definition 4 is checking against a document no one in this project has
+read.
+
+That matters more here than almost anywhere else in the log. §5 was first
+reconstructed from secondary sources and the authors' reference implementation,
+because no copy of the paper was reachable (§13.4). The verification existed to
+replace that reconstruction with the paper. **It got a paper, under another
+paper's name.** The re-derivation is real; what it was re-derived from is not
+what the citation said.
+
+**Found by accident, not by a check.** The file was being removed because
+nothing licensed its redistribution (register row 47), and writing its
+replacement citation meant reading its first page. Nothing in the build reads a
+citation, and nothing in review ever compared the label on the file with the
+file.
+
+**What was checked once it was found.** Every numbered item the spec cites
+unmarked exists in v3: Algorithm 1, Definitions 4 and 6, Lemmas 3 and 5,
+Theorems 9 and 10, Fig. 6. Every item it cites as arXiv exists in v1: §5.1,
+Theorem 5, Appendix B and its Figure 7, A.1.8, A.1.9. Two unmarked references in
+§5 did not resolve under the spec's own rule, which made unmarked mean TPDS:
+
+- "Theorem 5 is the reason there cannot be one" means v1's impossibility
+  theorem. v3 has no Theorem 5, and its own cross-references use that label for
+  Lemma 5, which is the *exception* to non-interleaving. The same words name
+  opposite things in the two versions.
+- "The Fig. 7 shape" means v1's counterexample. v3's Fig. 7 is a different
+  figure, an extension of its Fig. 6.
+
+Both are now marked arXiv v1. Outside the spec, two citations do not hold under
+the reading rule §5 now states, and neither is changed here:
+
+- `tests/Conformance/traces/0030-kleppmann-interleaving-test.json` cites
+  "arXiv Lemma 3 / TPDS Lemma 3". v1 has no Lemma 3; its third numbered
+  statement is Proposition 3, a different claim. The text the trace relies on is
+  v3's Lemma 3, so the "arXiv" half was right only because v3 is on arXiv too.
+- `tests/Crdt.Core.Tests/InvariantTests.cs` explains its forward/backward split
+  with an unmarked "Lemma 3 … Theorem 5", taking v3's numbering and v1's in one
+  sentence.
+
+**What is not known, and is not claimed:** whether the published article numbers
+its statements as v3 does, or says the same things. IEEE's copy may match the
+authors' final version exactly. It may also be where v3's mislabelled
+cross-references were corrected, or something was renumbered. Until someone
+compares them, §5 cites v3 and says so, and a difference found is a §13 entry
+before anything in §5 changes.
+
+**The general form, which this log keeps meeting elsewhere.** A citation records
+where a claim is *said* to come from, and nothing checks that against where it
+*came* from. The label on a file, the name in a sentence and the bytes that were
+read are three things, and only the first two were ever written down. It is the
+same family as a measurement that does not record which build produced it,
+§13.38's duration with no named boundary, and §13.25's message that reports what
+the author meant to compare rather than what was compared. The Raft project
+closed this for measurements: each record carries the commit it was measured at,
+and a gate fails a record whose commit is not an ancestor of the head. Citations
+here have no equivalent. The cheap form of one is what this entry applies:
+**cite the artefact that was read** (an arXiv identifier with its version, not a
+venue) and keep the venue as a note on it. The same check run on the Raft
+project's two references found both as labelled. The Herlihy & Wing copy
+carries the *TOPLAS* 12(3), July 1990 imprint its citation names, and the Raft
+paper is the extended version of May 2014 that its citation names.
