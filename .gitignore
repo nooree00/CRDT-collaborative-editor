@@ -21,6 +21,8 @@ dist/
 !.env.example
 *.pfx
 *.p12
+*.pem
+*.key
 
 # Editors
 .vs/
