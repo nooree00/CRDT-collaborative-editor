@@ -34,6 +34,6 @@
   ],
   "expected": {
     "oneOf": ["<----------##########>", "<##########---------->"],
-    "rationale": "Two concurrent forward runs at the same position must each stay contiguous (arXiv Lemma 3 / TPDS Lemma 3). Any interleaved result such as <#---##--###--##---##> is a forward non-interleaving failure."
+    "rationale": "Two concurrent forward runs at the same position must each stay contiguous (arXiv v3 Lemma 3; arXiv v1 Proposition 3, clause 2). Any interleaved result such as <#---##--###--##---##> is a forward non-interleaving failure."
   }
 }

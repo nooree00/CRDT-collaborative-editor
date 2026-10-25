@@ -222,8 +222,8 @@ public sealed class InvariantTests(ITestOutputHelper output)
 
                     if (run.Direction == RunDirection.Forward)
                     {
-                        // Lemma 3 gives this unconditionally, for any number of
-                        // replicas.
+                        // arXiv v3 Lemma 3 gives this unconditionally, for any
+                        // number of replicas.
                         Assert.True(
                             contiguous,
                             $"a forward run of {occupied.Length} characters at "
@@ -233,9 +233,9 @@ public sealed class InvariantTests(ITestOutputHelper output)
                     else
                     {
                         // Observed, never enforced. There is no backward
-                        // analogue of Lemma 3 at any replica count — Theorem 5
-                        // forbids one — so the only sound statement about
-                        // backward runs is Definition 4, checked above.
+                        // analogue of v3's Lemma 3 at any replica count — arXiv
+                        // v1 Theorem 5 forbids one — so the only sound statement
+                        // about backward runs is v3's Definition 4, checked above.
                         backwardContiguity.Record(contiguous);
                     }
                 }

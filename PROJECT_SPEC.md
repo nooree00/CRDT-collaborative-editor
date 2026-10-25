@@ -182,8 +182,9 @@ v1's Theorem 5 is the impossibility result, while v3 has no Theorem 5 and its ow
 cross-references use that label for Lemma 5; v1's Fig. 7 is the impossibility
 counterexample, v3's Fig. 7 extends its Fig. 6. Elsewhere in the repository
 (code comments, test messages, the conformance traces) "TPDS" means arXiv v3,
-the text that was read, and "arXiv" means v1. §13.76 names the two places where
-that rule does not hold.
+the text that was read, "arXiv" means v1, and a version written out means that
+version. §13.76 lists the two places where the rule did not hold, both since
+corrected.
 
 FugueMax replaces RGA, which was specified here originally. The reason is
 recorded in §13.1: RGA cannot satisfy invariant 8.
@@ -7187,16 +7188,24 @@ Theorem 5, Appendix B and its Figure 7, A.1.8, A.1.9. Two unmarked references in
 - "The Fig. 7 shape" means v1's counterexample. v3's Fig. 7 is a different
   figure, an extension of its Fig. 6.
 
-Both are now marked arXiv v1. Outside the spec, two citations do not hold under
-the reading rule §5 now states, and neither is changed here:
+Both are now marked arXiv v1. Outside the spec, two citations did not hold
+under the reading rule §5 now states. Both are corrected:
 
-- `tests/Conformance/traces/0030-kleppmann-interleaving-test.json` cites
-  "arXiv Lemma 3 / TPDS Lemma 3". v1 has no Lemma 3; its third numbered
-  statement is Proposition 3, a different claim. The text the trace relies on is
-  v3's Lemma 3, so the "arXiv" half was right only because v3 is on arXiv too.
-- `tests/Crdt.Core.Tests/InvariantTests.cs` explains its forward/backward split
+- `tests/Conformance/traces/0030-kleppmann-interleaving-test.json` cited
+  "arXiv Lemma 3 / TPDS Lemma 3". v1 has no Lemma 3. The claim the trace rests
+  on is in both versions under different labels: v3's Lemma 3, and clause (2) of
+  v1's Proposition 3, which states it as equivalent to v1's Definition 2. The
+  rationale now cites both. **This is the one place the citation was built to
+  hold.** The corpus carries a rationale so that a failing expectation cannot be
+  edited without the edit visibly contradicting the paper. It is printed in
+  every failure message for the trace, and `Every_trace_carries_a_rationale`
+  enforces it. That test checks the rationale is at least forty characters long.
+  Nothing checks that the section it names exists. *An earlier version of this
+  entry called Proposition 3 "a different claim". It is the same claim under
+  another label: this entry's own point, made against its author.*
+- `tests/Crdt.Core.Tests/InvariantTests.cs` explained its forward/backward split
   with an unmarked "Lemma 3 … Theorem 5", taking v3's numbering and v1's in one
-  sentence.
+  sentence. Each reference now names its version.
 
 **What is not known, and is not claimed:** whether the published article numbers
 its statements as v3 does, or says the same things. IEEE's copy may match the
