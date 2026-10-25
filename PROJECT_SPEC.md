@@ -7169,9 +7169,21 @@ Theorem 5, Appendix B and its Figure 7, A.1.8, A.1.9. Two unmarked references in
 §5 did not resolve under the spec's own rule, which made unmarked mean TPDS:
 
 - "Theorem 5 is the reason there cannot be one" means v1's impossibility
-  theorem. v3 has no Theorem 5, and its own cross-references use that label for
-  Lemma 5, which is the *exception* to non-interleaving. The same words name
-  opposite things in the two versions.
+  theorem: no algorithm satisfying the strong list specification is both forward
+  and backward non-interleaving. v3 has no statement numbered Theorem 5, and its
+  own text gives that label to Lemma 5: Definition 4's backward condition holds
+  "unless Theorem 5 below says otherwise", and Lemma 5 is the case in which A and
+  B are forced apart. **So one label names the boundary in one version and its
+  exception in the other.** That is not a difference in numbering a reader can
+  shrug off. The impossibility result and the Lemma 5 exception are the two
+  statements invariant 8 is built from, and the two this project worked hardest
+  to keep apart (the person: they are what phases 1 and 2 worked to separate).
+  §5's scope note exists because the first is a limit on every algorithm, and
+  §13.6 records the boundary once drawn wrongly around the second. The sentence
+  also reads as true under either meaning, so no reading of the spec alone
+  could have caught it. **This is the case that justifies the entry:** a
+  citation whose label, resolved in the other version, names the statement it
+  was written to be distinguished from.
 - "The Fig. 7 shape" means v1's counterexample. v3's Fig. 7 is a different
   figure, an extension of its Fig. 6.
 
