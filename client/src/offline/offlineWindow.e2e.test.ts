@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { startWalk, type Walk } from '../walk/harness';
-import { pick } from '../e2e/browser';
+import { signInAs } from '../e2e/browser';
 import { NETWORK_CHANGED, rebuildingOnNetworkChange } from './networkChange';
 
 /**
@@ -179,7 +179,7 @@ describe("§9's offline-window discard, seen by a person", () => {
         const { page } = opened;
 
         await page.goto(walk.baseUrl);
-        await pick(page, 'offline-walker');
+        await signInAs(page, 'offline-walker');
 
         await until(
           page,

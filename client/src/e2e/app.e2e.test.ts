@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Page } from 'playwright';
 
 import { provision } from '../interop/harness';
-import { pick } from './browser';
+import { pick, signInAs } from './browser';
 import { startSystem, type System } from './harness';
 
 /**
@@ -63,9 +63,9 @@ describe('the application, in a browser', () => {
     await page.goto(`${system.api.baseUrl}/d/${documentId}`);
 
     try {
-      // The chooser is the issuer's login form. A browser with a session
-      // already skips it, which is why this waits for either.
-      await pick(page, subject);
+      // The chooser is the issuer's login form. This page's context is fresh,
+      // so the chooser must appear, and signInAs says so if it does not.
+      await signInAs(page, subject);
       await page.waitForSelector('textarea', { timeout: 60_000 });
       await page.waitForFunction(
         () => document.querySelector('[data-testid="state"]')?.textContent === 'live',
@@ -377,7 +377,7 @@ describe('the application, in a browser', () => {
     page.on('websocket', (socket) => urls.push(socket.url()));
 
     await page.goto(`${system.api.baseUrl}/d/${documentId}`);
-    await pick(page, 'e2e-url');
+    await signInAs(page, 'e2e-url');
     await page.waitForFunction(
       () => document.querySelector('[data-testid="state"]')?.textContent === 'live',
       undefined,

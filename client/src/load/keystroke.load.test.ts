@@ -3,7 +3,7 @@ import type { Page } from 'playwright';
 import { HttpTransportType, HubConnectionBuilder, type HubConnection, type IHttpConnectionOptions } from '@microsoft/signalr';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import { startSystem, type System } from '../e2e/harness';
-import { pick } from '../e2e/browser';
+import { signInAs } from '../e2e/browser';
 import { provision } from '../interop/harness';
 import { decodeOperations, encodeOperations, parseReplicaId, Replica } from '../crdt';
 import { cpuBetween, describe as describeProvenance, percentiles, provenance, sampleCpu } from './provenance';
@@ -137,7 +137,7 @@ describe("§8's keystroke-to-render target", () => {
         system.oidc.accounts.add(subject);
         const { page } = await system.browsing.open();
         await page.goto(`${system.api.baseUrl}/d/${documentId}`);
-        await pick(page, subject);
+        await signInAs(page, subject);
         await page.waitForSelector('textarea', { timeout: 120_000 });
         await page.waitForFunction(
           () => document.querySelector('[data-testid="state"]')?.textContent === 'live',

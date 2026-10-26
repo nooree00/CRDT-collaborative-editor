@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { startWalk, type Walk } from './harness';
-import { pick } from '../e2e/browser';
+import { signInAs } from '../e2e/browser';
 
 /**
  * §7, asserted against the application as Compose starts it (register row 13).
@@ -255,7 +255,7 @@ describe('§7 against the deployed stack', () => {
     });
 
     await page.goto(walk.baseUrl);
-    await pick(page, 'csp-walker');
+    await signInAs(page, 'csp-walker');
 
     await page.waitForSelector('[data-testid="create"]', { timeout: 60_000 });
     await page.fill('[data-testid="new-title"]', 'Under policy');

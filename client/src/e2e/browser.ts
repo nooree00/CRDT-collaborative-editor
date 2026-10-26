@@ -105,3 +105,23 @@ export async function pick(page: Page, subject: string): Promise<boolean> {
   await button.click();
   return true;
 }
+
+/**
+ * Signs in by clicking an account at the issuer, and requires the chooser.
+ *
+ * @remarks
+ * For a page in a context from `open()`, which is always fresh: it holds no
+ * session, so the chooser must appear, and `pick` returning false means sign-in
+ * never started. Written for the walk (§13.75) and moved here, beside `pick`,
+ * so a suite finds it where it finds `pick`. While it lived in the walk, four
+ * other suites kept discarding `pick`'s answer, among them the deployed-stack
+ * suite, whose 60-second timeout after `pick` could not say which step failed
+ * (register row 46).
+ */
+export async function signInAs(page: Page, subject: string): Promise<void> {
+  if (!(await pick(page, subject))) {
+    throw new Error(
+      `the issuer offered no account for '${subject}' within 15 s, so sign-in `
+      + `never started. The browser is at ${page.url()}.`);
+  }
+}

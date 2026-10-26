@@ -1,31 +1,7 @@
-import { type Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { startWalk, type Walk } from './harness';
-import { pick } from '../e2e/browser';
-
-/**
- * Signs in by clicking an account at the issuer, and requires the chooser.
- *
- * @remarks
- * `pick` is deliberately a "use it if it is there" step, because a browser
- * holding a session skips the chooser — and its own documentation says a caller
- * that *requires* the chooser has to assert that separately. Every sign-in in
- * this file opens a fresh context, so every one of them requires it, and all
- * seven threw the answer away.
- *
- * What that cost is on the record. Run 166's step 6 failed as a 60-second
- * timeout on a condition about the page after the callback — three candidate
- * causes wide, none of them distinguishable — when `pick` returning false
- * would have said the chooser never appeared. §13.75, register row 46.
- */
-async function signInAs(page: Page, subject: string): Promise<void> {
-  expect(
-    await pick(page, subject),
-    `the issuer offered no account for '${subject}' within 15 s, so sign-in `
-    + `never started. The browser is at ${page.url()}.`,
-  ).toBe(true);
-}
+import { signInAs } from '../e2e/browser';
 
 /**
  * §13.27's walk, as a test. Phase 5b's done-when.
